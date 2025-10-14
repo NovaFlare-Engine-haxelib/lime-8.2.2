@@ -188,7 +188,16 @@ class NativeApplication
 	{
 		for (window in parent.windows)
 		{
-			window.onDropFile.dispatch(CFFI.stringValue(dropEventInfo.file));
+			switch (dropEventInfo.type) {
+				case DROP_FILE:
+					window.onDropFile.dispatch(CFFI.stringValue(dropEventInfo.file));
+				case DROP_TEXT:
+					window.onDropText.dispatch(CFFI.stringValue(dropEventInfo.file));
+				case DRAG_ENTER:
+					window.onDragEnter.dispatch();
+				case DRAG_EXIT:
+					window.onDragExit.dispatch();
+			}
 		}
 	}
 

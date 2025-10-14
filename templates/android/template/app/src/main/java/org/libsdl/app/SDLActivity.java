@@ -1908,7 +1908,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
-        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, mDisplay.getRefreshRate());
+        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, /* mDisplay.getRefreshRate() */1000);
         SDLActivity.onNativeResize();
 
         // Prevent a screen distortion glitch,
