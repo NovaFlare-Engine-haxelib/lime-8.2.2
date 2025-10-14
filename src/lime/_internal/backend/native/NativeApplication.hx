@@ -186,7 +186,10 @@ class NativeApplication
 
 	private function handleDropEvent():Void
 	{
-		window.onDropFile.dispatch(CFFI.stringValue(dropEventInfo.file));
+		for (window in parent.windows)
+		{
+			window.onDropFile.dispatch(CFFI.stringValue(dropEventInfo.file));
+		}
 	}
 
 	private function handleGamepadEvent():Void
