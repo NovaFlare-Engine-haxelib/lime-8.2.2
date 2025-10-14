@@ -186,19 +186,7 @@ class NativeApplication
 
 	private function handleDropEvent():Void
 	{
-		for (window in parent.windows)
-		{
-			switch (dropEventInfo.type) {
-				case DROP_FILE:
-					window.onDropFile.dispatch(CFFI.stringValue(dropEventInfo.file));
-				case DROP_TEXT:
-					window.onDropText.dispatch(CFFI.stringValue(dropEventInfo.file));
-				case DRAG_ENTER:
-					window.onDragEnter.dispatch();
-				case DRAG_EXIT:
-					window.onDragExit.dispatch();
-			}
-		}
+		window.onDropFile.dispatch(CFFI.stringValue(dropEventInfo.file));
 	}
 
 	private function handleGamepadEvent():Void
