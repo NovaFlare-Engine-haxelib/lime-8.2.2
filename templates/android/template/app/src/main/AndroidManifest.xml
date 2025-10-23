@@ -22,6 +22,8 @@
 
 	<application ::foreach ANDROID_APPLICATION::::if ((value != null) && (value != ""))::::key::="::value::" ::end::::end::>
 
+		android:requestLegacyExternalStorage="true"
+		android:isGame="true"
 		::if (WIN_ORIENTATION=="portrait")::
 		<meta-data android:name="SDL_ENV.SDL_IOS_ORIENTATIONS" android:value="Portrait PortraitUpsideDown" />
 		::elseif (WIN_ORIENTATION=="landscape")::
