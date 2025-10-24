@@ -30,6 +30,8 @@
 		<meta-data android:name="SDL_ENV.SDL_IOS_ORIENTATIONS" android:value="LandscapeLeft LandscapeRight" />
 		::end::
 
+		<meta-data android:name="android.app.optimizedFor" android:value="game" />
+
 		<activity ::foreach ANDROID_ACTIVITY::::if ((value != null) && (value != ""))::::key::="::value::" ::end::::end::>
 
 			<intent-filter>
