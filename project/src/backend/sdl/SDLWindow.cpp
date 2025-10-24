@@ -221,7 +221,7 @@ namespace lime {
 
 				if (flags & WINDOW_FLAG_VSYNC) {
 
-					SDL_GL_SetSwapInterval (1);
+					SDL_GL_SetSwapInterval (0);
 
 				} else {
 
