@@ -28,6 +28,7 @@
 #include "SDL_androidwindow.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
+//#include "../../video/SDL_video.h"
 
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
@@ -57,6 +58,8 @@ static void aaudio_ResumeDevices(void) {}
 static void aaudio_PauseDevices(void) {}
 static SDL_bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
 #endif
+
+static int saved_swap_interval = 0; // 保存垂直同步设置
 
 
 
@@ -159,6 +162,9 @@ Android_PumpEvents_Blocking(_THIS)
 
             /* Android_PauseSem was signaled */
             if (videodata->isPausing == 0) {
+                // 保存当前垂直同步设置
+                saved_swap_interval = SDL_GL_GetSwapInterval();
+                
                 SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
                 SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
@@ -186,9 +192,9 @@ void
 Android_PumpEvents_NonBlocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-    static int backup_context = 0;
+static int backup_context = 0;
 
-    if (videodata->isPaused) {
+if (videodata->isPaused) {
 
         SDL_bool isContextExternal = SDL_IsVideoContextExternal();
         if (backup_context) {
@@ -231,6 +237,8 @@ Android_PumpEvents_NonBlocking(_THIS)
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_restore(Android_Window);
+                // 恢复之前保存的垂直同步设置，而不是使用默认值
+                SDL_GL_SetSwapInterval(saved_swap_interval);
                 SDL_UnlockMutex(Android_ActivityMutex);
             }
 #endif
