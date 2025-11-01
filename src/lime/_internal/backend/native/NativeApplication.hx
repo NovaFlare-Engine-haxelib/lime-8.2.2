@@ -24,6 +24,8 @@ import lime.ui.KeyModifier;
 import lime.ui.Touch;
 import lime.ui.Window;
 
+import openfl.Lib;
+
 #if !lime_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -63,6 +65,8 @@ class NativeApplication
 	private var pauseTimer:Int;
 	private var parent:Application;
 	private var toggleFullscreen:Bool;
+
+	private var _time:Float = 0;
 
 	private static function __init__()
 	{
@@ -368,12 +372,16 @@ class NativeApplication
 				case RENDER:
 					if (window.context != null)
 					{
-						window.__backend.render();
-						window.onRender.dispatch(window.context);
+						window.onlyUpdate.dispatch();
 
-						if (!window.onRender.canceled)
-						{
-							window.__backend.contextFlip();
+						if (drawCheck(window)) {
+							window.__backend.render();
+							window.onRender.dispatch(window.context);
+
+							if (!window.onRender.canceled)
+							{
+								window.__backend.contextFlip();
+							}
 						}
 					}
 
@@ -406,6 +414,18 @@ class NativeApplication
 					}
 			}
 		}
+	}
+
+	private var delta:Float;
+	private function drawCheck(window:Window):Bool
+	{
+		delta = (1000 / Math.min(window.frameRate, window.displayMode.refreshRate));
+		if ((Lib.getTimer() - _time) >= delta)
+		{
+			_time += delta;
+			return true;
+		}
+		return false;
 	}
 
 	private function handleSensorEvent():Void
