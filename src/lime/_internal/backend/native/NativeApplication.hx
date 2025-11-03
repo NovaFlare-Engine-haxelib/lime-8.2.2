@@ -419,7 +419,10 @@ class NativeApplication
 	private var delta:Float;
 	private function drawCheck(window:Window):Bool
 	{
-		delta = (1000 / Math.min(window.frameRate, window.displayMode.refreshRate));
+		if (window.frameRate < window.displayMode.refreshRate) return true;
+		//如果设置的帧率小于刷新率，就直接绘制
+
+		delta = (1000 / window.frameRate);
 		if ((Lib.getTimer() - _time) >= delta)
 		{
 			_time += delta;
