@@ -34,6 +34,7 @@ class Window
 	public var cursor(get, set):MouseCursor;
 	public var display(get, null):Display;
 	public var displayMode(get, set):DisplayMode;
+	public var splitUpdate(get, set):Bool;
 	#if (!lime_doc_gen || (js && html5))
 	public var element(default, null):#if (js && html5) Element #else Dynamic #end;
 	#end
@@ -45,6 +46,7 @@ class Window
 	 * perform more quickly on displays with a higher refresh rate
 	**/
 	public var frameRate(get, set):Float;
+	
 
 	public var fullscreen(get, set):Bool;
 	public var height(get, set):Int;
@@ -125,6 +127,7 @@ class Window
 	@:noCompletion private var __minHeight:Int = 0;
 	@:noCompletion private var __maxWidth:Int = 0x7FFFFFFF;
 	@:noCompletion private var __maxHeight:Int = 0x7FFFFFFF;
+	@:noCompletion private var __splitUpdate:Bool = false;
 
 	#if commonjs
 	private static function __init__()
@@ -557,6 +560,16 @@ class Window
 	{
 		setMaxSize(__maxWidth, value);
 		return __maxHeight;
+	}
+
+	@:noCompletion private inline function get_splitUpdate():Bool
+	{
+		return __splitUpdate;
+	}
+
+	@:noCompletion private function set_splitUpdate(value:Bool):Bool
+	{
+		return __splitUpdate = value;
 	}
 
 	@:noCompletion private inline function get_maximized():Bool
