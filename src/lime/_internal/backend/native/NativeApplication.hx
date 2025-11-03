@@ -429,6 +429,7 @@ class NativeApplication
 		if ((Lib.getTimer() - _time) >= delta)
 		{
 			_time += delta;
+			//trace('update');
 			return true;
 		}
 		return false;
