@@ -420,7 +420,6 @@ class NativeApplication
 	private function drawCheck(window:Window):Bool
 	{
 		if (window.frameRate <= window.displayMode.refreshRate || !window.splitUpdate) {
-			delta = Lib.getTimer(); //即使是直接绘制也先提前更新检测数据
 			return true;
 		}
 		//如果设置的帧率小于刷新率，就直接绘制
@@ -429,8 +428,7 @@ class NativeApplication
 
 		if ((Lib.getTimer() - _time) >= delta)
 		{
-			_time += delta;
-			//trace('update');
+			_time += delta * Math.floor((Lib.getTimer() - _time) / delta);
 			return true;
 		}
 		return false;
