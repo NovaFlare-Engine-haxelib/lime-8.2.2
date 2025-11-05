@@ -419,12 +419,12 @@ class NativeApplication
 	private var delta:Float;
 	private function drawCheck(window:Window):Bool
 	{
-		if (window.frameRate <= window.displayMode.refreshRate || !window.splitUpdate) {
+		if (window.frameRate <= window.drawFrameRate || !window.splitUpdate) {
 			return true;
 		}
-		//如果设置的帧率小于刷新率，就直接绘制
+		//如果设置的更新帧率小于屏幕刷新率，就直接绘制
 
-		delta = (1000 / window.displayMode.refreshRate); //使用屏幕最高支持刷新率作为绘制间隔，前面以及检测了当前设置帧数比刷新率高
+		delta = (1000 / window.drawFrameRate); //前面以及检测了当前设置更新帧率比屏幕刷新率高
 
 		if ((Lib.getTimer() - _time) >= delta)
 		{

@@ -46,7 +46,7 @@ class Window
 	 * perform more quickly on displays with a higher refresh rate
 	**/
 	public var frameRate(get, set):Float;
-	
+	public var drawFrameRate(get, set):Int;
 
 	public var fullscreen(get, set):Bool;
 	public var height(get, set):Int;
@@ -128,6 +128,7 @@ class Window
 	@:noCompletion private var __maxWidth:Int = 0x7FFFFFFF;
 	@:noCompletion private var __maxHeight:Int = 0x7FFFFFFF;
 	@:noCompletion private var __splitUpdate:Bool = false;
+	@:noCompletion private var __drawFrameRate:Int;
 
 	#if commonjs
 	private static function __init__()
@@ -382,6 +383,8 @@ class Window
 
 		Gamepad.addMappings(mappings);
 		#end
+
+		drawFrameRate = displayMode.refreshRate;
 	}
 
 	public function alert(message:String = null, title:String = null):Void
@@ -570,6 +573,16 @@ class Window
 	@:noCompletion private function set_splitUpdate(value:Bool):Bool
 	{
 		return __splitUpdate = value;
+	}
+
+	@:noCompletion private inline function get_drawFrameRate():Int
+	{
+		return __drawFrameRate;
+	}
+
+	@:noCompletion private function set_drawFrameRate(value:Int):Int
+	{
+		return __drawFrameRate = value;
 	}
 
 	@:noCompletion private inline function get_maximized():Bool
