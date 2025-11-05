@@ -5,11 +5,12 @@
 namespace lime {
 
 
-	class OpenGLBindings {
+class OpenGLBindings {
 
 		public:
 
 			static bool Init ();
+			static void ReapplyCachedState ();
 
 			static int defaultFramebuffer;
 			static int defaultRenderbuffer;

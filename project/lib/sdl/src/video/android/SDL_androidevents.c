@@ -85,7 +85,7 @@ android_egl_context_restore(SDL_Window *window)
             SDL_PushEvent(&event);
         }
         /* 强制关闭垂直同步，确保从后台恢复时不会开启垂直同步 */
-        SDL_GL_SetSwapInterval(0);
+        //SDL_GL_SetSwapInterval(0);
         data->backup_done = 0;
     }
 }
@@ -239,8 +239,6 @@ if (videodata->isPaused) {
             if (!isContextExternal && !SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_restore(Android_Window);
-                // 恢复之前保存的垂直同步设置，而不是使用默认值
-                SDL_GL_SetSwapInterval(0);
                 SDL_UnlockMutex(Android_ActivityMutex);
             }
 #endif

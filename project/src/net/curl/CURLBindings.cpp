@@ -902,6 +902,11 @@ namespace lime {
 
 				break;
 
+			default:
+
+				// Unsupported or newer CURLINFO value; return null to avoid warnings
+				break;
+
 
 		}
 
@@ -1020,6 +1025,11 @@ namespace lime {
 
 				// ignore
 
+				break;
+
+			default:
+
+				// Unsupported or newer CURLINFO value; return NULL to avoid warnings
 				break;
 
 

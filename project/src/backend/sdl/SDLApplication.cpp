@@ -2,6 +2,7 @@
 #include "SDLGamepad.h"
 #include "SDLJoystick.h"
 #include <system/System.h>
+#include "../../graphics/opengl/OpenGLBindings.h"
 
 #ifdef HX_MACOS
 #include <CoreFoundation/CoreFoundation.h>
@@ -233,18 +234,21 @@ namespace lime {
 				ProcessMouseEvent (event);
 				break;
 
-			#ifndef EMSCRIPTEN
-			case SDL_RENDER_DEVICE_RESET:
+		#ifndef EMSCRIPTEN
+		case SDL_RENDER_DEVICE_RESET:
 
-				renderEvent.type = RENDER_CONTEXT_LOST;
-				RenderEvent::Dispatch (&renderEvent);
+			renderEvent.type = RENDER_CONTEXT_LOST;
+			RenderEvent::Dispatch (&renderEvent);
 
-				renderEvent.type = RENDER_CONTEXT_RESTORED;
-				RenderEvent::Dispatch (&renderEvent);
+			renderEvent.type = RENDER_CONTEXT_RESTORED;
+			RenderEvent::Dispatch (&renderEvent);
 
-				renderEvent.type = RENDER;
-				break;
-			#endif
+			// Reapply cached GL state after context restore
+			OpenGLBindings::ReapplyCachedState();
+
+			renderEvent.type = RENDER;
+			break;
+		#endif
 
 			case SDL_TEXTINPUT:
 			case SDL_TEXTEDITING:

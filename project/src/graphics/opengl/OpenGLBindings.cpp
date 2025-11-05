@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
 
 #ifdef NEED_EXTENSIONS
 #define DEFINE_EXTENSION
@@ -54,6 +55,34 @@ namespace lime {
 	std::vector<void*> gc_gl_ptr;
 	std::vector<GLObjectType> gc_gl_type;
 	Mutex gc_gl_mutex;
+
+    // Cached GL state to reapply after context restore
+    static bool s_clearColorSet = false;
+    static float s_clearColor[4] = {0.f, 0.f, 0.f, 0.f};
+    static std::set<GLenum> s_enabledCaps;
+
+    void OpenGLBindings::ReapplyCachedState () {
+        if (!initialized) return;
+        // Rebind default framebuffer/renderbuffer if known
+        if (defaultFramebuffer != 0) {
+            glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebuffer);
+        } else {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        if (defaultRenderbuffer != 0) {
+            glBindRenderbuffer(GL_RENDERBUFFER, defaultRenderbuffer);
+        }
+
+        // Reapply clear color
+        if (s_clearColorSet) {
+            glClearColor(s_clearColor[0], s_clearColor[1], s_clearColor[2], s_clearColor[3]);
+        }
+
+        // Re-enable critical capabilities tracked
+        for (auto cap : s_enabledCaps) {
+            glEnable(cap);
+        }
+    }
 
 
 	void gc_gl_object (value object) {
@@ -672,6 +701,8 @@ namespace lime {
 
 	void lime_gl_clear_color (float red, float green, float blue, float alpha) {
 
+		s_clearColorSet = true;
+		s_clearColor[0] = red; s_clearColor[1] = green; s_clearColor[2] = blue; s_clearColor[3] = alpha;
 		glClearColor (red, green, blue, alpha);
 
 	}
@@ -679,6 +710,8 @@ namespace lime {
 
 	HL_PRIM void HL_NAME(hl_gl_clear_color) (float red, float green, float blue, float alpha) {
 
+		s_clearColorSet = true;
+		s_clearColor[0] = red; s_clearColor[1] = green; s_clearColor[2] = blue; s_clearColor[3] = alpha;
 		glClearColor (red, green, blue, alpha);
 
 	}
@@ -1342,16 +1375,18 @@ namespace lime {
 	}
 
 
-	void lime_gl_disable (int cap) {
+void lime_gl_disable (int cap) {
 
 		glDisable (cap);
+		s_enabledCaps.erase((GLenum)cap);
 
 	}
 
 
-	HL_PRIM void HL_NAME(hl_gl_disable) (int cap) {
+HL_PRIM void HL_NAME(hl_gl_disable) (int cap) {
 
 		glDisable (cap);
+		s_enabledCaps.erase((GLenum)cap);
 
 	}
 
@@ -1480,16 +1515,18 @@ namespace lime {
 	}
 
 
-	void lime_gl_enable (int cap) {
+void lime_gl_enable (int cap) {
 
 		glEnable (cap);
+		s_enabledCaps.insert((GLenum)cap);
 
 	}
 
 
-	HL_PRIM void HL_NAME(hl_gl_enable) (int cap) {
+HL_PRIM void HL_NAME(hl_gl_enable) (int cap) {
 
 		glEnable (cap);
+		s_enabledCaps.insert((GLenum)cap);
 
 	}
 
