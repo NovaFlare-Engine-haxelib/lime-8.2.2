@@ -60,6 +60,9 @@
     "chrono": "cpp",
     "codecvt": "cpp",
     "xlocale": "cpp",
-    "xutility": "c"
+    "xutility": "c",
+    "array": "c",
+    "vector": "c",
+    "xstring": "c"
   }
 }

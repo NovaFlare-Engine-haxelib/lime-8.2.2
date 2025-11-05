@@ -85,7 +85,7 @@ android_egl_context_restore(SDL_Window *window)
             SDL_PushEvent(&event);
         }
         /* 强制关闭垂直同步，确保从后台恢复时不会开启垂直同步 */
-        //SDL_GL_SetSwapInterval(0);
+        SDL_GL_SetSwapInterval(0);
         data->backup_done = 0;
     }
 }
