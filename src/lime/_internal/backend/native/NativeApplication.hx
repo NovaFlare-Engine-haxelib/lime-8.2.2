@@ -66,7 +66,10 @@ class NativeApplication
 	private var parent:Application;
 	private var toggleFullscreen:Bool;
 
-	private var _time:Float = 0;
+	private var __lastDrawUpdateTime:Float = 0.0;
+	private var __drawAccumulator:Float = 0.0;
+	private var __drawFramePeriod:Float = 0.0;
+	private static var MAX_FRAMESKIP:Int = 5;
 
 	private static function __init__()
 	{
@@ -80,6 +83,9 @@ class NativeApplication
 		this.parent = parent;
 		pauseTimer = -1;
 		toggleFullscreen = true;
+
+		__lastDrawUpdateTime = System.getTimer();
+		__drawAccumulator = 0.0;
 
 		AudioManager.init();
 
@@ -372,15 +378,40 @@ class NativeApplication
 				case RENDER:
 					if (window.context != null)
 					{
+						var current = System.getTimer();
+						var realDeltaTime = current - __lastDrawUpdateTime;
+						__lastDrawUpdateTime = current;
+						__drawAccumulator += realDeltaTime;
+
+						__drawFramePeriod = 1000 / parent.window.drawFrameRate; // Update draw frame period dynamically
+
 						window.onlyUpdate.dispatch();
 
-						if (drawCheck(window)) {
+						// Draw logic
+						if (!window.splitUpdate) {
+							// Draw every frame when splitUpdate is true
 							window.__backend.render();
 							window.onRender.dispatch(window.context);
 
 							if (!window.onRender.canceled)
 							{
 								window.__backend.contextFlip();
+							}
+							__drawAccumulator = 0; // Reset accumulator
+						} else {
+							// Use accumulator logic when splitUpdate is false
+							var drawFramesSkipped = 0;
+							while (__drawAccumulator >= __drawFramePeriod && drawFramesSkipped < MAX_FRAMESKIP)
+							{
+								window.__backend.render();
+								window.onRender.dispatch(window.context);
+
+								if (!window.onRender.canceled)
+								{
+									window.__backend.contextFlip();
+								}
+								__drawAccumulator -= __drawFramePeriod;
+								drawFramesSkipped++;
 							}
 						}
 					}
@@ -416,23 +447,8 @@ class NativeApplication
 		}
 	}
 
-	private var delta:Float;
-	private function drawCheck(window:Window):Bool
-	{
-		if (window.frameRate <= window.drawFrameRate || !window.splitUpdate) {
-			return true;
-		}
-		//如果设置的更新帧率小于屏幕刷新率，就直接绘制
+	
 
-		delta = (1000 / window.drawFrameRate); //前面以及检测了当前设置更新帧率比屏幕刷新率高
-
-		if ((Lib.getTimer() - _time) >= delta)
-		{
-			_time += delta * Math.floor((Lib.getTimer() - _time) / delta);
-			return true;
-		}
-		return false;
-	}
 
 	private function handleSensorEvent():Void
 	{

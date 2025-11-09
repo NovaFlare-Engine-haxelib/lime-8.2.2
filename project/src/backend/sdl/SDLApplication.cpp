@@ -20,7 +20,9 @@ namespace lime {
 	SDLApplication* SDLApplication::currentApplication = 0;
 
 	const int analogAxisDeadZone = 1000;
-	std::map<int, std::map<int, int> > gamepadsAxisMap;
+	static std::map<int, std::map<int, int>> gamepadsAxisMap;
+	static double accumulator = 0.0;
+static const int MAX_FRAMESKIP = 5;
 	bool inBackground = false;
 
 
@@ -130,23 +132,23 @@ namespace lime {
 
 				if (!inBackground) {
 
-					currentUpdate = SDL_GetTicks ();
-					applicationEvent.type = UPDATE;
-					applicationEvent.deltaTime = currentUpdate - lastUpdate;
-					lastUpdate = currentUpdate;
+						currentUpdate = SDL_GetTicks ();
+						double realDeltaTime = currentUpdate - lastUpdate;
+						lastUpdate = currentUpdate;
 
-					nextUpdate += framePeriod;
+						accumulator += realDeltaTime;
 
-					while (nextUpdate <= currentUpdate) {
-
-						nextUpdate += framePeriod;
+						int framesSkipped = 0;
+						while (accumulator >= framePeriod && framesSkipped < MAX_FRAMESKIP) {
+							applicationEvent.type = UPDATE;
+							applicationEvent.deltaTime = framePeriod;
+							ApplicationEvent::Dispatch (&applicationEvent);
+							RenderEvent::Dispatch (&renderEvent);
+							accumulator -= framePeriod;
+							framesSkipped++;
+						}
 
 					}
-
-					ApplicationEvent::Dispatch (&applicationEvent);
-					RenderEvent::Dispatch (&renderEvent);
-
-				}
 
 				break;
 
@@ -375,38 +377,40 @@ namespace lime {
 
 				case SDL_CONTROLLERAXISMOTION:
 
-					if (gamepadsAxisMap[event->caxis.which].empty ()) {
+					// std::array is default-initialized to 0, so no need to check for empty()
+					// We also need to ensure the axis is within bounds, though SDL should handle this.
+					if (event->caxis.axis >= 0 && event->caxis.axis < 6) { // Using 6 as SDL_CONTROLLER_AXIS_MAX
 
-						gamepadsAxisMap[event->caxis.which][event->caxis.axis] = event->caxis.value;
+						if (gamepadsAxisMap[event->caxis.which][event->caxis.axis] == event->caxis.value) {
 
-					} else if (gamepadsAxisMap[event->caxis.which][event->caxis.axis] == event->caxis.value) {
-
-						break;
-
-					}
-
-					gamepadEvent.type = GAMEPAD_AXIS_MOVE;
-					gamepadEvent.axis = event->caxis.axis;
-					gamepadEvent.id = event->caxis.which;
-
-					if (event->caxis.value > -analogAxisDeadZone && event->caxis.value < analogAxisDeadZone) {
-
-						if (gamepadsAxisMap[event->caxis.which][event->caxis.axis] != 0) {
-
-							gamepadsAxisMap[event->caxis.which][event->caxis.axis] = 0;
-							gamepadEvent.axisValue = 0;
-							GamepadEvent::Dispatch (&gamepadEvent);
+							break;
 
 						}
 
-						break;
+						gamepadEvent.type = GAMEPAD_AXIS_MOVE;
+						gamepadEvent.axis = event->caxis.axis;
+						gamepadEvent.id = event->caxis.which;
+
+						if (event->caxis.value > -analogAxisDeadZone && event->caxis.value < analogAxisDeadZone) {
+
+							if (gamepadsAxisMap[event->caxis.which][event->caxis.axis] != 0) {
+
+								gamepadsAxisMap[event->caxis.which][event->caxis.axis] = 0;
+								gamepadEvent.axisValue = 0;
+								GamepadEvent::Dispatch (&gamepadEvent);
+
+							}
+
+							break;
+
+						}
+
+						gamepadsAxisMap[event->caxis.which][event->caxis.axis] = event->caxis.value;
+						gamepadEvent.axisValue = event->caxis.value / (event->caxis.value > 0 ? 32767.0 : 32768.0);
+
+						GamepadEvent::Dispatch (&gamepadEvent);
 
 					}
-
-					gamepadsAxisMap[event->caxis.which][event->caxis.axis] = event->caxis.value;
-					gamepadEvent.axisValue = event->caxis.value / (event->caxis.value > 0 ? 32767.0 : 32768.0);
-
-					GamepadEvent::Dispatch (&gamepadEvent);
 					break;
 
 				case SDL_CONTROLLERBUTTONDOWN:
@@ -816,6 +820,8 @@ namespace lime {
 
 	void SDLApplication::SetFrameRate (double frameRate) {
 
+		accumulator = 0.0;
+
 		if (frameRate > 0) {
 
 			framePeriod = 1000.0 / frameRate;
@@ -835,8 +841,8 @@ namespace lime {
 
 	Uint32 OnTimer (Uint32 interval, void *) {
 
-		SDL_Event event;
-		SDL_UserEvent userevent;
+		static SDL_Event event;
+		static SDL_UserEvent userevent;
 		userevent.type = SDL_USEREVENT;
 		userevent.code = 0;
 		userevent.data1 = NULL;
@@ -942,9 +948,9 @@ namespace lime {
 
 		#if defined(HX_MACOS) || defined(ANDROID)
 
-		System::GCEnterBlocking ();
+		// System::GCEnterBlocking ();
 		int result = SDL_WaitEvent (event);
-		System::GCExitBlocking ();
+		// System::GCExitBlocking ();
 		return result;
 
 		#else
