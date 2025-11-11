@@ -131,6 +131,23 @@ namespace lime {
 
 			case SDL_USEREVENT:
 
+				if (!inBackground) {
+					currentUpdate = SDL_GetTicks ();
+					double realDeltaTime = currentUpdate - lastUpdate;
+					lastUpdate = currentUpdate;
+					accumulator += realDeltaTime;
+
+					if (accumulator >= framePeriod) {
+						applicationEvent.type = UPDATE;
+						applicationEvent.deltaTime = framePeriod;
+						ApplicationEvent::Dispatch (&applicationEvent);
+						RenderEvent::Dispatch (&renderEvent);
+						accumulator -= framePeriod;
+					}
+				}
+
+				currentUpdate = SDL_GetTicks ();
+				
 				break;
 
 			case SDL_APP_WILLENTERBACKGROUND:
@@ -867,24 +884,6 @@ namespace lime {
 					return active;
 
 			}
-
-			// Game loop logic moved here
-			if (!inBackground) {
-				currentUpdate = SDL_GetTicks ();
-				double realDeltaTime = currentUpdate - lastUpdate;
-				lastUpdate = currentUpdate;
-				accumulator += realDeltaTime;
-
-				if (accumulator >= framePeriod) {
-					applicationEvent.type = UPDATE;
-					applicationEvent.deltaTime = framePeriod;
-					ApplicationEvent::Dispatch (&applicationEvent);
-					RenderEvent::Dispatch (&renderEvent);
-					accumulator -= framePeriod;
-				}
-			}
-
-			currentUpdate = SDL_GetTicks ();
 
 		#if defined (IPHONE) || defined (EMSCRIPTEN)
 
