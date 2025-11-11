@@ -22,7 +22,8 @@ namespace lime {
 	const int analogAxisDeadZone = 1000;
 	static std::map<int, std::map<int, int>> gamepadsAxisMap;
 	static double accumulator = 0.0;
-static const int MAX_FRAMESKIP = 5;
+	static const int MAX_FRAMESKIP = 10;
+	static const double MAX_ACCUMULATED_TIME = 100.0;
 	bool inBackground = false;
 
 
@@ -137,6 +138,10 @@ static const int MAX_FRAMESKIP = 5;
 						lastUpdate = currentUpdate;
 
 						accumulator += realDeltaTime;
+
+						if (accumulator > MAX_ACCUMULATED_TIME) {
+							accumulator = 0;
+						}
 
 						int framesSkipped = 0;
 						while (accumulator >= framePeriod && framesSkipped < MAX_FRAMESKIP) {
