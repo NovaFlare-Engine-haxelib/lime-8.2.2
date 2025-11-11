@@ -143,11 +143,13 @@ namespace lime {
 							accumulator = 0;
 						}
 
+						ApplicationEvent::Dispatch (&applicationEvent);
+
 						int framesSkipped = 0;
 						while (accumulator >= framePeriod && framesSkipped < MAX_FRAMESKIP) {
 							applicationEvent.type = UPDATE;
 							applicationEvent.deltaTime = framePeriod;
-							ApplicationEvent::Dispatch (&applicationEvent);
+							
 							RenderEvent::Dispatch (&renderEvent);
 							accumulator -= framePeriod;
 							framesSkipped++;
