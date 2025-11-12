@@ -135,6 +135,12 @@ namespace lime {
 					currentUpdate = SDL_GetTicks ();
 					double realDeltaTime = currentUpdate - lastUpdate;
 					lastUpdate = currentUpdate;
+
+					const double MAX_DELTA_TIME = 5 * framePeriod;
+					if (realDeltaTime > MAX_DELTA_TIME) {
+						realDeltaTime = MAX_DELTA_TIME;
+					}
+
 					accumulator += realDeltaTime;
 
 					if (accumulator >= framePeriod) {
