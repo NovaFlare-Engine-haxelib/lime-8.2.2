@@ -3398,6 +3398,26 @@ namespace lime {
 	}
 
 
+	value lime_alc_get_string_global (int param) {
+
+		const char* result = alcGetString (0, param);
+		return result ? alloc_string (result) : alloc_null ();
+
+	}
+
+
+	HL_PRIM vbyte* HL_NAME(hl_alc_get_string_global) (int param) {
+
+		const char* result = alcGetString (0, param);
+		if (!result) return 0;
+		int length = strlen (result);
+		char* _result = (char*)malloc (length + 1);
+		strcpy (_result, result);
+		return (vbyte*)_result;
+
+	}
+
+
 	bool lime_alc_make_context_current (value context) {
 
 		ALCcontext* alcContext = (ALCcontext*)val_data (context);
@@ -3504,13 +3524,24 @@ namespace lime {
 	}
 
 
-	HL_PRIM void HL_NAME(hl_alc_suspend_context) (HL_CFFIPointer* context) {
+HL_PRIM void HL_NAME(hl_alc_suspend_context) (HL_CFFIPointer* context) {
 
 		ALCcontext* alcContext = context ? (ALCcontext*)context->ptr : NULL;
 		alcSuspendContext (alcContext);
 
 	}
 
+
+ 
+
+
+ 
+
+
+ 
+
+
+ 
 
 
 
@@ -3622,12 +3653,14 @@ namespace lime {
 	DEFINE_PRIME1 (lime_alc_get_error);
 	DEFINE_PRIME3 (lime_alc_get_integerv);
 	DEFINE_PRIME2 (lime_alc_get_string);
+	DEFINE_PRIME1 (lime_alc_get_string_global);
 	DEFINE_PRIME1 (lime_alc_make_context_current);
 	DEFINE_PRIME1 (lime_alc_open_device);
 	DEFINE_PRIME1v (lime_alc_pause_device);
 	DEFINE_PRIME1v (lime_alc_process_context);
 	DEFINE_PRIME1v (lime_alc_resume_device);
 	DEFINE_PRIME1v (lime_alc_suspend_context);
+    
 
 
 	#define _TBYTES _OBJ (_I32 _BYTES)
@@ -3746,12 +3779,15 @@ namespace lime {
 	DEFINE_HL_PRIM (_I32, hl_alc_get_error, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_ARR, hl_alc_get_integerv, _TCFFIPOINTER _I32 _I32);
 	DEFINE_HL_PRIM (_BYTES, hl_alc_get_string, _TCFFIPOINTER _I32);
+	DEFINE_HL_PRIM (_BYTES, hl_alc_get_string_global, _I32);
 	DEFINE_HL_PRIM (_BOOL, hl_alc_make_context_current, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_TCFFIPOINTER, hl_alc_open_device, _STRING);
 	DEFINE_HL_PRIM (_VOID, hl_alc_pause_device, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_VOID, hl_alc_process_context, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_VOID, hl_alc_resume_device, _TCFFIPOINTER);
 	DEFINE_HL_PRIM (_VOID, hl_alc_suspend_context, _TCFFIPOINTER);
+	DEFINE_HL_PRIM (_BOOL, hl_alc_is_extension_present, _TCFFIPOINTER _STRING);
+	DEFINE_HL_PRIM (_BOOL, hl_alc_is_extension_present_global, _STRING);
 
 
 }

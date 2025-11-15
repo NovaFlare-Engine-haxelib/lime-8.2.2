@@ -381,8 +381,6 @@ class NativeApplication
 								window.__backend.contextFlip();
 							}
 						}
-
-						drawPost(window);
 					}
 
 				case RENDER_CONTEXT_LOST:
@@ -448,11 +446,6 @@ class NativeApplication
 		}
 
 		return false;
-	}
-
-	private function drawPost(window:Window):Void
-	{
-		//lastUpdate = System.getTimer();
 	}
 
 	private function handleSensorEvent():Void

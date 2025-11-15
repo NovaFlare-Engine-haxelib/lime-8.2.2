@@ -53,6 +53,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import java.util.Hashtable;
 import java.util.Locale;
@@ -202,6 +203,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static View mTextEdit;
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
+    protected static ProgressBar mLoading;
+    protected static boolean mIsLoading;
     protected static SDLClipboardHandler mClipboardHandler;
     protected static Hashtable<Integer, PointerIcon> mCursors;
     protected static int mLastCursorID;
@@ -374,6 +377,24 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mLayout = new RelativeLayout(this);
         mLayout.addView(mSurface);
 
+        // 初始化加载覆盖层（居中、不可交互）
+        mLoading = new ProgressBar(this);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        mLoading.setIndeterminate(true);
+        mLoading.setVisibility(View.GONE);
+        mLayout.addView(mLoading, lp);
+
+        // 恢复加载状态
+        if (savedInstanceState != null) {
+            mIsLoading = savedInstanceState.getBoolean("SDL_LOADING", false);
+            if (mIsLoading) {
+                mLoading.setVisibility(View.VISIBLE);
+            }
+        } else {
+            mIsLoading = false;
+        }
+
         // Get our current screen orientation and pass it down.
         mCurrentOrientation = SDLActivity.getCurrentOrientation();
         // Only record current orientation
@@ -452,6 +473,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (!mHasMultiWindow) {
             resumeNativeThread();
         }
+
+        // 若仍在加载，确保覆盖层可见
+        if (mIsLoading && mLoading != null) {
+            mLoading.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -461,6 +487,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHasMultiWindow) {
             pauseNativeThread();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("SDL_LOADING", mIsLoading);
     }
 
     @Override
@@ -904,6 +936,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeAddTouch(int touchId, String name);
     public static native void nativePermissionResult(int requestCode, boolean result);
     public static native void onNativeLocaleChanged();
+
+    // 切换加载覆盖层显示状态（可供 Haxe/JNI 直接调用）
+    public static void setLoadingVisible(final boolean visible) {
+        if (mSingleton == null || mLoading == null) return;
+        mIsLoading = visible;
+        mSingleton.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mLoading.setVisibility(visible ? View.VISIBLE : View.GONE);
+            }
+        });
+    }
 
     /**
      * This method is called by SDL using JNI.

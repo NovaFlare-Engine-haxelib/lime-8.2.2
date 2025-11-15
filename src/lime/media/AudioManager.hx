@@ -17,41 +17,50 @@ import js.Browser;
 @:access(lime._internal.backend.native.NativeCFFI)
 class AudioManager
 {
-	public static var context:AudioContext;
+    public static var context:AudioContext;
+    
 
-	public static function init(context:AudioContext = null)
-	{
-		if (AudioManager.context == null)
-		{
-			if (context == null)
-			{
-				AudioManager.context = new AudioContext();
-				context = AudioManager.context;
+    public static function init(context:AudioContext = null)
+    {
+        if (AudioManager.context == null)
+        {
+            if (context == null)
+            {
+                AudioManager.context = new AudioContext();
+                context = AudioManager.context;
 
-				#if !lime_doc_gen
-				if (context.type == OPENAL)
-				{
-					var alc = context.openal;
+                #if !lime_doc_gen
+                if (context.type == OPENAL)
+                {
+                    var alc = context.openal;
 
-					var device = alc.openDevice();
-					var ctx = alc.createContext(device);
-					alc.makeContextCurrent(ctx);
-					alc.processContext(ctx);
+                    var device = alc.openDevice();
+                    var ctx = alc.createContext(device);
+                    alc.makeContextCurrent(ctx);
+                    alc.processContext(ctx);
+
+                    
 				}
-				#end
-			}
+                #end
+            }
 
-			AudioManager.context = context;
+            AudioManager.context = context;
 
-			#if (lime_cffi && !macro && lime_openal && (ios || tvos || mac))
-			var timer = new Timer(100);
-			timer.run = function()
-			{
-				NativeCFFI.lime_al_cleanup();
-			};
-			#end
-		}
-	}
+            #if (lime_cffi && !macro && lime_openal && (ios || tvos || mac))
+            var timer = new Timer(100);
+            timer.run = function()
+            {
+                NativeCFFI.lime_al_cleanup();
+            };
+            #end
+        }
+    }
+
+    
+
+    
+
+    
 
 	public static function resume():Void
 	{

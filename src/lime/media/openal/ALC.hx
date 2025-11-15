@@ -152,6 +152,16 @@ class ALC
 		#end
 	}
 
+    public static function getDefaultDeviceName():String
+    {
+        #if (lime_cffi && lime_openal && !macro)
+        var result = NativeCFFI.lime_alc_get_string_global(DEFAULT_DEVICE_SPECIFIER);
+        return CFFI.stringValue(result);
+        #else
+        return null;
+        #end
+    }
+
 	public static function makeContextCurrent(context:ALContext):Bool
 	{
 		#if (lime_cffi && lime_openal && !macro)
