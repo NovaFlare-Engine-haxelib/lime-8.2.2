@@ -41,12 +41,28 @@ class AndroidHelper
 
 		if (System.hostPlatform != WINDOWS)
 		{
-			System.runCommand("", "chmod", ["755", Path.combine(projectDirectory, "gradlew")]);
-			System.runCommand(projectDirectory, "./gradlew", args);
+			var wrapper = Path.combine(projectDirectory, "gradlew");
+			if (FileSystem.exists(wrapper))
+			{
+				System.runCommand("", "chmod", ["755", wrapper]);
+				System.runCommand(projectDirectory, "./gradlew", args);
+			}
+			else
+			{
+				System.runCommand(projectDirectory, "gradle", args);
+			}
 		}
 		else
 		{
-			System.runCommand(projectDirectory, "gradlew", args);
+			var wrapper = Path.combine(projectDirectory, "gradlew.bat");
+			if (FileSystem.exists(wrapper))
+			{
+				System.runCommand(projectDirectory, "gradlew", args);
+			}
+			else
+			{
+				System.runCommand(projectDirectory, "gradle.bat", args);
+			}
 		}
 	}
 

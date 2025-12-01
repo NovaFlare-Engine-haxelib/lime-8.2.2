@@ -24,6 +24,7 @@ namespace lime {
 	static double accumulator = 0.0;
 	static int accumulatorOverThresholdCount = 0;
 	bool inBackground = false;
+	static bool renderTriggered = false;
 
 	SDLApplication::SDLApplication () {
 
@@ -142,12 +143,13 @@ namespace lime {
 					accumulator += realDeltaTime;
 
 					if (accumulator >= framePeriod) {
-						applicationEvent.type = UPDATE;
-						applicationEvent.deltaTime = framePeriod;
-						ApplicationEvent::Dispatch (&applicationEvent);
-						RenderEvent::Dispatch (&renderEvent);
-						accumulator -= framePeriod;
-					}
+					applicationEvent.type = UPDATE;
+					applicationEvent.deltaTime = framePeriod;
+					ApplicationEvent::Dispatch (&applicationEvent);
+					RenderEvent::Dispatch (&renderEvent);
+					renderTriggered = true;
+					accumulator -= framePeriod;
+				}
 
 					{
 						const double threshold = 2 * framePeriod;
@@ -163,9 +165,8 @@ namespace lime {
 					}
 				}
 
-				currentUpdate = SDL_GetTicks ();
-				
-				break;
+
+			break;
 
 			case SDL_APP_WILLENTERBACKGROUND:
 
@@ -902,6 +903,8 @@ namespace lime {
 
 			}
 
+		currentUpdate = SDL_GetTicks ();
+
 		#if defined (IPHONE) || defined (EMSCRIPTEN)
 
 			if (currentUpdate >= nextUpdate) {
@@ -910,16 +913,23 @@ namespace lime {
 
 		#else
 
-			if (currentUpdate >= nextUpdate) {
+			if (renderTriggered) {
 
 				if (timerActive) SDL_RemoveTimer (timerID);
+				nextUpdate = currentUpdate + framePeriod;
+				OnTimer (0, 0);
+				renderTriggered = false;
+
+			} else if (currentUpdate >= nextUpdate) {
+
+				if (timerActive) SDL_RemoveTimer (timerID);
+				nextUpdate = currentUpdate + framePeriod / 2;
 				OnTimer (0, 0);
 
 			} else if (!timerActive) {
 
 				timerActive = true;
 				timerID = SDL_AddTimer (nextUpdate - currentUpdate, OnTimer, 0);
-
 			}
 
 		}

@@ -651,6 +651,77 @@ class AndroidPlatform extends PlatformTarget
 				AssetHelper.copyAsset(asset, targetPath, context);
 			}
 		}
+
+		var manifestPath = sourceSet + "/AndroidManifest.xml";
+		if (!FileSystem.exists(manifestPath))
+		{
+			var permissions:Array<String> = context.ANDROID_PERMISSIONS;
+			var appAttrs = new StringBuf();
+			for (attribute in context.ANDROID_APPLICATION)
+			{
+				if (attribute.value != null)
+				{
+					appAttrs.add(" ");
+					appAttrs.add(attribute.key);
+					appAttrs.add('="');
+					appAttrs.add(Std.string(attribute.value));
+					appAttrs.add('"');
+				}
+			}
+			var activityAttrs = new StringBuf();
+			for (attribute in context.ANDROID_ACTIVITY)
+			{
+				if (attribute.value != null)
+				{
+					activityAttrs.add(" ");
+					activityAttrs.add(attribute.key);
+					activityAttrs.add('="');
+					activityAttrs.add(Std.string(attribute.value));
+					activityAttrs.add('"');
+				}
+			}
+			var versionCode = (project.meta.buildNumber == null ? "1" : Std.string(project.meta.buildNumber));
+			var versionName = project.meta.version;
+			var installLoc = context.ANDROID_INSTALL_LOCATION;
+			var winOrientation = project.window.orientation;
+			var orientationMeta = new StringBuf();
+			if (winOrientation == PORTRAIT)
+			{
+				orientationMeta.add('\n\t\t<meta-data android:name="SDL_ENV.SDL_IOS_ORIENTATIONS" android:value=  "Portrait PortraitUpsideDown" />\n');
+			}
+			else if (winOrientation == LANDSCAPE)
+			{
+				orientationMeta.add('\n\t\t<meta-data android:name="SDL_ENV.SDL_IOS_ORIENTATIONS" android:value=  "LandscapeLeft LandscapeRight" />\n');
+			}
+			var permsText = new StringBuf();
+			for (p in permissions)
+			{
+				permsText.add('\n\t<uses-permission android:name="');
+				permsText.add(p);
+				permsText.add('" />');
+			}
+			var manifest = '<?xml version="1.0" encoding="utf-8"?>\n'
+				+ '<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="' + versionCode + '" android:versionName="' + versionName
+				+ '" android:installLocation="' + installLoc + '">\n\n\t<uses-feature android:glEsVersion="0x00020000" android:required="true" />\n\t<uses-feature android:name="android.hardware.touchscreen" android:required="false" />'
+				+ permsText.toString() + '\n\n\t<application' + appAttrs.toString() + '>\n' + orientationMeta.toString()
+				+ '\n\t\t<activity' + activityAttrs.toString() + '>\n\t\t\t<intent-filter>\n\t\t\t\t<action android:name="android.intent.action.MAIN" />\n\t\t\t\t<category android:name="android.intent.category.LAUNCHER" />\n\t\t\t\t<category android:name="tv.ouya.intent.category.GAME" />\n\t\t\t</intent-filter>\n\t\t\t</activity>\n\n\t</application>\n\n</manifest>';
+			System.mkdir(sourceSet);
+			File.saveContent(manifestPath, manifest);
+		}
+		var gradlePropsPath = destination + "/gradle.properties";
+		if (!FileSystem.exists(gradlePropsPath))
+		{
+			var useAndroidX = Std.string(context.ANDROID_USE_ANDROIDX);
+			var enableJetifier = Std.string(context.ANDROID_ENABLE_JETIFIER);
+			var props = 'org.gradle.jvmargs=-Xmx2048m\norg.gradle.daemon=false\norg.gradle.caching=false\n\nVERSION_NAME=' + versionName + '\nVERSION_CODE=' + versionCode
+				+ '\n\nANDROID_BUILD_TARGET_SDK_VERSION=' + Std.string(context.ANDROID_TARGET_SDK_VERSION) + '\nANDROID_BUILD_MIN_SDK_VERSION=' + Std.string(context.ANDROID_MINIMUM_SDK_VERSION)
+				+ '\nANDROID_BUILD_SDK_VERSION=' + Std.string(context.ANDROID_TARGET_SDK_VERSION) + '\nANDROID_BUILD_TOOLS_VERSION=' + Std.string(context.ANDROID_BUILD_TOOLS_VERSION);
+			if (context.ANDROID_TARGET_SDK_VERSION >= 28)
+			{
+				props += '\nandroid.useAndroidX=' + useAndroidX + '\nandroid.enableJetifier=' + enableJetifier;
+			}
+			File.saveContent(gradlePropsPath, props);
+		}
 	}
 
 	public override function watch():Void
