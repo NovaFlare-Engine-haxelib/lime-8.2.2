@@ -61,7 +61,7 @@ static void aaudio_PauseDevices(void) {}
 static SDL_bool aaudio_DetectBrokenPlayState( void ) { return SDL_FALSE; }
 #endif
 
-static int saved_swap_interval = 0; // 保存垂直同步设置
+static int saved_swap_interval = -1; // 保存垂直同步设置
 
 
 
@@ -151,18 +151,11 @@ android_egl_context_restore(SDL_Window *window)
             prev_surface_w = surface_w;
             prev_surface_h = surface_h;
             prev_rate = max_rate;
-        } else {
-            /* 即便尺寸/刷新率未变化，也触发一次窗口尺寸事件，确保前台恢复后渲染路径被唤醒 */
-            Android_SendResize(window);
         }
 
-        /* 恢复垂直同步配置到暂停前记录的值，如失败则保持关闭 */
-        if (saved_swap_interval != 0) {
-            if (SDL_GL_SetSwapInterval(saved_swap_interval) < 0) {
-                SDL_GL_SetSwapInterval(0);
-            }
-        } else {
-            SDL_GL_SetSwapInterval(0);
+        /* 恢复垂直同步配置到暂停前记录的值 */
+        if (saved_swap_interval >= 0) {
+            SDL_GL_SetSwapInterval(saved_swap_interval);
         }
 
         /* 标记备份已完成 */

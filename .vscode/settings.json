@@ -137,5 +137,6 @@
     "xmemory": "cpp",
     "xtr1common": "cpp",
     "xtree": "cpp"
-  }
+  },
+  "cmake.sourceDirectory": "C:/HaxeToolkit/haxe/lib/lime/8,2,2/project/lib/efsw"
 }

@@ -22,10 +22,8 @@ namespace lime {
 	const int analogAxisDeadZone = 1000;
 	static std::map<int, std::map<int, int>> gamepadsAxisMap;
 	static double accumulator = 0.0;
-	static const int MAX_FRAMESKIP = 10;
-	static const double MAX_ACCUMULATED_TIME = 100.0;
+	static int accumulatorOverThresholdCount = 0;
 	bool inBackground = false;
-
 
 	SDLApplication::SDLApplication () {
 
@@ -149,6 +147,19 @@ namespace lime {
 						ApplicationEvent::Dispatch (&applicationEvent);
 						RenderEvent::Dispatch (&renderEvent);
 						accumulator -= framePeriod;
+					}
+
+					{
+						const double threshold = 2 * framePeriod;
+						if (accumulator > threshold) {
+							accumulatorOverThresholdCount++;
+							if (accumulatorOverThresholdCount > 10) {
+								accumulator = 0.0;
+								accumulatorOverThresholdCount = 0;
+							}
+						} else if (accumulator < threshold) {
+							accumulatorOverThresholdCount = 0;
+						}
 					}
 				}
 

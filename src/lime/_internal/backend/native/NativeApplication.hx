@@ -420,33 +420,33 @@ class NativeApplication
 	private var framePeriod:Float = 0; //帧周期，单位毫秒
 	private var accumulator:Float = 0; //累加器，单位毫秒
 	private var realDeltaTime:Float = 0; //实际时间间隔，单位毫秒
-	private function drawCheck(window:Window):Bool
-	{
-		if (window.frameRate <= window.drawFrameRate || !window.splitUpdate) {
-			return true;
-		}
-		//如果设置的更新帧率小于屏幕刷新率，就直接绘制
+    private function drawCheck(window:Window):Bool
+    {
+        if (window.frameRate <= window.drawFrameRate || !window.splitUpdate) {
+            return true;
+        }
+        //如果设置的更新帧率小于屏幕刷新率，就直接绘制
 
-		framePeriod = (1000 / window.drawFrameRate); //前面已经检测了当前设置更新帧率比屏幕刷新率高
+        framePeriod = (1000 / window.drawFrameRate); //前面已经检测了当前设置更新帧率比屏幕刷新率高
 
-		currentUpdate = System.getTimer(); //当前帧更新时间
-		realDeltaTime = currentUpdate - lastUpdate;
-		lastUpdate = System.getTimer();
-		
-		if (realDeltaTime > 5 * framePeriod) {
-			realDeltaTime = 5 * framePeriod;
-		}
+        currentUpdate = System.getTimer(); //当前帧更新时间
+        realDeltaTime = currentUpdate - lastUpdate;
+        lastUpdate = System.getTimer();
+        
+        if (realDeltaTime > 5 * framePeriod) {
+            realDeltaTime = 5 * framePeriod;
+        }
 
-		accumulator += realDeltaTime; //累加器
+        accumulator += realDeltaTime; //累加器
 
-		if (accumulator >= framePeriod)
-		{
-			accumulator -= framePeriod;
-			return true;
-		}
+        if (accumulator >= framePeriod)
+        {
+            accumulator -= framePeriod;
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
 	private function handleSensorEvent():Void
 	{
