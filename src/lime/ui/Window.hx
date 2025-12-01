@@ -678,6 +678,11 @@ class Window
 		return __scale;
 	}
 
+	public function setTextInputEnabled(value:Bool):Bool
+	{
+		return __backend.setTextInputEnabled(value);
+	}
+
 	@:noCompletion private inline function get_textInputEnabled():Bool
 	{
 		return __backend.getTextInputEnabled();
